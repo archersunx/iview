@@ -1,7 +1,7 @@
 {
-    "name": "iview",
+    "name": "iview-custom",
     "version": "3.4.2",
-    "title": "iView",
+    "title": "iView-custom",
     "description": "A high quality UI components Library with Vue.js",
     "homepage": "http://www.iviewui.com",
     "keywords": [
