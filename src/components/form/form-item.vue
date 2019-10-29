@@ -28,7 +28,11 @@
             if (key in tempObj) {
                 tempObj = tempObj[key];
             } else {
-                throw new Error('[iView warn]: please transfer a valid prop path to form item!');
+                // throw new Error('[iView warn]: please transfer a valid prop path to form item!');
+                // 中间属性不存在时，创建一个临时的
+                tempObj = {};
+                i = len - 1;
+                break;
             }
         }
         return {
