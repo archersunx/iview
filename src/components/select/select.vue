@@ -662,9 +662,10 @@
                     if (!this.autoComplete) this.$nextTick(() => inputField.focus());
                 }
                 this.broadcast('Drop', 'on-update-popper');
-                setTimeout(() => {
-                    this.filterQueryChange = false;
-                }, ANIMATION_TIMEOUT);
+                // 修改，搜索之后点击option，取消过滤的问题
+                // setTimeout(() => {
+                //     this.filterQueryChange = false;
+                // }, ANIMATION_TIMEOUT);
             },
             onQueryChange(query) {
                 if (query.length > 0 && query !== this.query) {
