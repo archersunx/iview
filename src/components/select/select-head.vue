@@ -247,7 +247,7 @@
                 if (!this.filterable) return;
                 this.preventRemoteCall = true;
                 if (this.multiple){
-                    this.query = '';
+                    // this.query = ''; // 修复关键字消失的问题
                     this.preventRemoteCall = false; // this should be after the query change setter above
                     return;
                 }
