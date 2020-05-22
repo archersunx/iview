@@ -63,6 +63,24 @@
                 :transfer="transfer"
                 v-transfer-dom
             >
+                <!-- 全选功能 -->
+                <div v-if="multiple" v-show="flatOptions.length" :class="[prefixCls + '-item']">
+                    <Checkbox
+                        :value="isAllSelected"
+                        :indeterminate="isPartialSelected"
+                    ><strong>全选</strong></Checkbox>
+                    <!--
+                        这里使用了下面的标签来监听点击事件，没有直接在上面的Checkbox上注册的原因是：点击上面的Checkbox组件会导致select-head组件中的搜索框失去焦点，
+                        从而触发select-head组件中注册的onInputBlur事件，导致的错误是：在选中项为空，且输入了查询条件的情况下，点击上面的全选按钮会清空查询条件，导致选中了全部选项；
+                        所以，这里使用了如下的hack方法，使用一个遮罩层将Checkbox盖住，并在层上注册对应的事件，保证搜索框不失去焦点
+                    -->
+                    <div
+                        @click="toggleSelectAll"
+                        @mousedown.stop.prevent
+                        style="position:absolute;top:0;bottom:0;left:0;right:0;z-index: 2"
+                    ></div>
+                </div>
+
                 <ul v-show="showNotFoundLabel" :class="[prefixCls + '-not-found']"><li>{{ localeNotFoundText }}</li></ul>
                 <ul :class="prefixCls + '-dropdown-list'">
                     <functional-options
@@ -78,6 +96,7 @@
     </div>
 </template>
 <script>
+    import Checkbox from '../checkbox/';
     import Drop from './dropdown.vue';
     import {directive as clickOutside} from 'v-click-outside-x';
     import TransferDom from '../../directives/transfer-dom';
@@ -150,13 +169,14 @@
         return strValue !== strPublic || strValue !== strValues || strValues !== strPublic;
     };
 
+    const isSameOption = (option1, option2) => option1.value === option2.value;
 
     const ANIMATION_TIMEOUT = 300;
 
     export default {
         name: 'iSelect',
         mixins: [ Emitter, Locale ],
-        components: { FunctionalOptions, Drop, SelectHead },
+        components: { FunctionalOptions, Drop, SelectHead, Checkbox },
         directives: { clickOutside, TransferDom },
         props: {
             value: {
@@ -426,9 +446,37 @@
             },
             remote(){
                 return typeof this.remoteMethod === 'function';
+            },
+            // 当前没有禁用、且没有被过滤掉的选项数据
+            enabledOptionDataList() {
+                let optionDataList = [];
+                
+                this.flatOptions.forEach(({componentOptions}) => {
+                    let {disabled, value} = componentOptions.propsData;
+
+                    if (!disabled) {
+                        optionDataList.push(this.getOptionData(value));
+                    }
+                });
+
+                return optionDataList;
+            },
+            // 当前没有禁用、且没有被过滤掉的选项是否【全部】选中
+            isAllSelected() {
+                let options = this.enabledOptionDataList;
+                return options.length > 0 && options.every(this.isOptionSelected);
+            },
+            // 当前没有禁用、且没有被过滤掉的选项是否【只有部分】选中
+            isPartialSelected() {
+                let isSomeSelected = this.enabledOptionDataList.some(this.isOptionSelected);
+
+                return isSomeSelected && !this.isAllSelected;
             }
         },
         methods: {
+            isOptionSelected(option) {
+                return this.values.find(({value}) => value === option.value);
+            },
             setQuery(query){ // PUBLIC API
                 if (query) {
                     this.onQueryChange(query);
@@ -703,6 +751,24 @@
                     this.hasExpectedValue = true;
                 }
             },
+            /**
+             * 选中当前下拉列表中的所有项（注：这里不包含被查询条件过滤掉的选项）
+             */
+            toggleSelectAll() {
+                let { isAllSelected, enabledOptionDataList, values } = this;
+
+                if (isAllSelected) {
+                    values = values.filter(
+                        option1 => !enabledOptionDataList.find(option2 => isSameOption(option1, option2))
+                    );
+                } else {
+                    let needSelectOptions = enabledOptionDataList.filter(option => !this.isOptionSelected(option));
+
+                    values = values.concat(needSelectOptions);
+                }
+
+                this.values = values;
+            }
         },
         watch: {
             value(value){

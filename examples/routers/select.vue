@@ -44,8 +44,13 @@
             <Option v-for="item in cityList" :value="item.value" :key="item.value">{{ item.label }}</Option>
         </Select>
 
-        <Select size="large" v-model="model10" multiple style="width:400px" prefix="ios-albums">
+        <Select size="large" v-model="model10" filterable multiple style="width:400px" prefix="ios-albums">
             <Option v-for="item in cityList" :value="item.value" :key="item.value" :disabled="item.disabled">{{ item.label }}</Option>
+        </Select>
+        <Select size="large" v-model="model10" filterable multiple style="width:400px" prefix="ios-albums">
+            <OptionGroup v-for="prov in provinces" :key="prov.name" :label="prov.name">
+                <Option v-for="item in prov.cityList" :value="item.value" :key="item.value" :disabled="item.disabled">{{ item.label }}</Option>
+            </OptionGroup>
         </Select>
     </div>
 </template>
@@ -53,6 +58,39 @@
     export default {
         data () {
             return {
+                provinces: [{
+                    name: 'hebei',
+                    cityList: [{
+                        value: 'New York',
+                        label: 'New York',
+                        disabled: true
+                    },
+                    {
+                        value: 'London',
+                        label: 'London'
+                    }]
+                },{
+                    name: 'henan',
+                    cityList: [{
+                        value: 'Sydney',
+                        label: 'Sydney',
+                        disabled: true
+                    },
+                    {
+                        value: 'Ottawa',
+                        label: 'Ottawa'
+                    }]
+                },{
+                    name: 'shandong',
+                    cityList: [{
+                        value: 'Paris',
+                        label: 'Paris'
+                    },
+                    {
+                        value: 'Canberra',
+                        label: 'Canberra'
+                    }]
+                }],
                 cityList: [
                     {
                         value: 'New York',
